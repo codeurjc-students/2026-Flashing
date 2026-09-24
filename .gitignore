@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+*.iml
+.env
+.env.*
+!.env.example
+backend/target/
+frontend/node_modules/
+frontend/build/
+frontend/.react-router/
+frontend/coverage/
+*.log

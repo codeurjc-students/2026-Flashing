@@ -3,7 +3,26 @@
 Flashing es una red social de retos creativos cortos ("flashes"). Cada día, en una hora específica y variable, los usuarios reciben el mismo reto ("flash") y tienen un tiempo limitado para resolverlo. Las respuestas pueden ser una foto, un audio, un dibujo o un texto corto, dependiendo del reto. Cada respuesta queda grabada en un historial personal ("memories") y es compartida con los amigos que el usuario haya agregado en la aplicación, y cada usuario no podrá ver las respuestas de su comunidad hasta que no resuelva su flash diario. Existe un administrador que puede acceder a la plataforma web para gestionar los usuarios, flashes, categorías y temporadas, además de acceder a las estadísticas de uso de la aplicación. 
 
 
-*Nota: esta primera fase tiene solo definidos los objetivos técnicos y uncionales, pero no incluye aún ningún aspecto de implementación.*
+*Estado: se ha iniciado la fase 2 con la estructura de backend y frontend y una consulta mínima de retos. Las funcionalidades completas descritas a continuación siguen siendo objetivos del proyecto.*
+
+## Desarrollo local
+
+El proyecto utiliza Spring Boot (Java 21) exclusivamente como API REST, React con TypeScript y MySQL Community. Consulta la [guía de desarrollo](docs/DESARROLLO.md) para arrancar ambas aplicaciones y la [explicación archivo por archivo](docs/ESTRUCTURA.md) para comprender su organización. La [decisión sobre la base de datos](docs/BASE_DE_DATOS.md) explica el coste y las opciones de crecimiento.
+
+Antes de arrancar, crea en tu MySQL local una base de datos y un usuario con los valores de `.env.example`. Desde la raíz del repositorio:
+
+```bash
+mvn -f backend/pom.xml spring-boot:run
+```
+
+En otra terminal, con Node 22.12 o superior:
+
+```bash
+npm --prefix frontend ci
+npm --prefix frontend run dev
+```
+
+Abre http://localhost:5173. La página consulta los retos de MySQL a través de `GET /api/v1/challenges`.
 
 ## Objetivos
 
@@ -275,11 +294,6 @@ Relaciones
 ## Uso de Herramientas de IA
 [Incluir un resumen de las herramientas de IA usadas en esta fase. Al final del resumen indicar que el fichero AI_USAGE.md o USO_IA.md tiene información detallada]
 
-## Seguimiento
-*   [Enlace al GitHub Project usado para gestionar las tareas del proyecto](https://github.com/codeurjc-students/2026-Flashing)
-
 ## Autor
-El desarrollo de esta aplicación se hace en el contexto del Trabajo de Fin de Grado del Doble Grado en Ingeniería Informática e Ingeniería del Software en la ETSII de la URJC.
 
-*   **Alumno:** Isidoro Perez Rivera
-*   **Tutor:** Micael Gallego Carrillo
+Isidoro Perez Rivera.
