@@ -5,25 +5,6 @@ Flashing es una red social de retos creativos cortos ("flashes"). Cada día, en 
 
 *Estado: se ha iniciado la fase 2 con la estructura de backend y frontend y una consulta mínima de retos. Las funcionalidades completas descritas a continuación siguen siendo objetivos del proyecto.*
 
-## Desarrollo local
-
-El proyecto utiliza Spring Boot (Java 21) exclusivamente como API REST, React con TypeScript y MySQL Community. Consulta la [guía de desarrollo](docs/DESARROLLO.md) para arrancar ambas aplicaciones y la [explicación archivo por archivo](docs/ESTRUCTURA.md) para comprender su organización. La [decisión sobre la base de datos](docs/BASE_DE_DATOS.md) explica el coste y las opciones de crecimiento.
-
-Antes de arrancar, crea en tu MySQL local una base de datos y un usuario con los valores de `.env.example`. Desde la raíz del repositorio:
-
-```bash
-mvn -f backend/pom.xml spring-boot:run
-```
-
-En otra terminal, con Node 22.12 o superior:
-
-```bash
-npm --prefix frontend ci
-npm --prefix frontend run dev
-```
-
-Abre http://localhost:5173. La página consulta los retos de MySQL a través de `GET /api/v1/challenges`.
-
 ## Objetivos
 
 ### Objetivos funcionales
