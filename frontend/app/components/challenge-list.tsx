@@ -7,7 +7,7 @@ interface ChallengeListProps {
 export function ChallengeList({ challenges }: ChallengeListProps) {
   return (
     <section aria-labelledby="challenges-title">
-      <h2>Retos</h2>
+      <h2 id="challenges-title">Retos</h2>
       {challenges.length === 0 ? <p>No hay retos disponibles.</p> : (
         <ul>
           {challenges.map((challenge) => (

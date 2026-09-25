@@ -16,5 +16,5 @@
       "~/*": ["./app/*"]
     }
   },
-  "include": ["app", ".react-router/types/**/*", "react-router.config.ts", "vite.config.ts"]
+  "include": ["app", "tests", ".react-router/types/**/*", "react-router.config.ts", "vite.config.ts", "vitest.config.ts"]
 }
