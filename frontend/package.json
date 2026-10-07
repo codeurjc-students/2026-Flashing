@@ -15,7 +15,9 @@
     "test:watch": "vitest tests/unit",
     "backend:test-server": "cd ../backend && mvn spring-boot:test-run",
     "test:integration:client-server:run": "VITE_API_BASE_URL=http://127.0.0.1:8080 vitest run tests/integration/client-server",
-    "test:integration:client-server": "start-server-and-test backend:test-server http://127.0.0.1:8080/api/v1/challenges test:integration:client-server:run"
+    "test:integration:client-server": "start-server-and-test backend:test-server http://127.0.0.1:8080/api/v1/challenges test:integration:client-server:run",
+    "test:system:run": "vitest run --environment node tests/system",
+    "test:system": "start-server-and-test backend:test-server http://127.0.0.1:8080/api/v1/challenges dev http://127.0.0.1:5173 test:system:run"
   },
   "dependencies": {
     "@react-router/node": "7.18.4",
@@ -32,7 +34,9 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/selenium-webdriver": "^4.35.7",
     "jsdom": "^27.0.1",
+    "selenium-webdriver": "^4.50.0",
     "start-server-and-test": "^3.0.12",
     "typescript": "~5.9.3",
     "vite": "^7.3.0",
