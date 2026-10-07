@@ -11,8 +11,11 @@
     "typecheck": "react-router typegen && tsc --noEmit",
     "build": "react-router build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run tests/unit",
+    "test:watch": "vitest tests/unit",
+    "backend:test-server": "cd ../backend && mvn spring-boot:test-run",
+    "test:integration:client-server:run": "VITE_API_BASE_URL=http://127.0.0.1:8080 vitest run tests/integration/client-server",
+    "test:integration:client-server": "start-server-and-test backend:test-server http://127.0.0.1:8080/api/v1/challenges test:integration:client-server:run"
   },
   "dependencies": {
     "@react-router/node": "7.18.4",
@@ -30,6 +33,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "jsdom": "^27.0.1",
+    "start-server-and-test": "^3.0.12",
     "typescript": "~5.9.3",
     "vite": "^7.3.0",
     "vite-tsconfig-paths": "^5.1.4",
