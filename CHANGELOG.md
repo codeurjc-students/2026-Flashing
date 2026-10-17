@@ -19,6 +19,24 @@ y el proyecto utiliza [versionado semántico](https://semver.org/lang/es/).
 - Cliente web SPA desarrollado con React, TypeScript y React Router Framework Mode.
 - Página principal que obtiene los retos mediante la API REST y muestra su información básica.
 - Estados de carga, lista vacía y error para la consulta de retos.
-- Guía de desarrollo y registro del uso de herramientas de inteligencia artificial.
+- Prueba unitaria del servicio del backend con JUnit y Mockito.
+- Pruebas unitarias del componente de retos con Vitest, Testing Library y JSDOM.
+- Prueba de integración entre servicio, repositorio y MySQL mediante Testcontainers.
+- Prueba de integración entre el cliente y la API REST real.
+- Prueba de sistema de la API REST con Rest Assured.
+- Prueba de sistema de la interfaz web con Selenium y Chrome.
+- Medición de cobertura del backend mediante JaCoCo.
+- Medición de cobertura del frontend mediante Vitest y V8.
+- Workflow básico de GitHub Actions para compilar y ejecutar pruebas unitarias en ramas de funcionalidad.
+- Workflow completo de GitHub Actions para ejecutar todas las pruebas en pull requests hacia `main`.
+- Documentación de fase 2 dividida por objetivos, metodología, funcionalidades, análisis, seguimiento, desarrollo y autoría.
+- Colección de Postman con ejemplos de uso de la API REST.
+- Guía de desarrollo actualizada con arquitectura, tecnologías, pruebas, cobertura, CI y ejecución local.
+- Registro del uso de herramientas de inteligencia artificial.
+
+### Corregido
+
+- Año del diagrama de Gantt actualizado de 2025 a 2026.
+- Errores tipográficos y referencias desactualizadas de la documentación inicial.
 
 [Sin publicar]: https://github.com/codeurjc-students/2026-Flashing/commits/main

@@ -1,21 +1,27 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Flashing API
+  description: API REST de la aplicación Flashing.
+  version: 0.0.1
 servers:
-- url: http://localhost:8080
-  description: Generated server url
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+tags:
+  - name: Retos
+    description: Consulta de las plantillas de retos disponibles.
 paths:
   /api/v1/challenges:
     get:
       tags:
-      - challenge-rest-controller
-      operationId: findAll
+        - Retos
+      summary: Obtener todos los retos
+      description: Devuelve las plantillas de retos ordenadas por identificador ascendente.
+      operationId: findAllChallenges
       responses:
         "200":
-          description: OK
+          description: Lista de retos recuperada correctamente.
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -28,12 +34,19 @@ components:
         id:
           type: integer
           format: int64
+          description: Identificador único del reto.
+          example: 1
         title:
           type: string
+          description: Título breve del reto.
+          example: Doble perspectiva
         prompt:
           type: string
+          description: Instrucción que debe completar el usuario.
+          example: Fotografía lo que tienes delante y detrás.
         type:
           type: string
+          description: Formato de respuesta requerido.
           enum:
           - DOUBLE_PHOTO
           - QUICK_DRAWING
@@ -43,3 +56,5 @@ components:
         durationSeconds:
           type: integer
           format: int32
+          description: Tiempo disponible para completar el reto, en segundos.
+          example: 120
