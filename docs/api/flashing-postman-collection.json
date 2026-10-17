@@ -1,0 +1,48 @@
+{
+  "info": {
+    "_postman_id": "47a48712-3a1e-4dde-9bb7-972cdf20737a",
+    "name": "Flashing API",
+    "description": "Colección de peticiones de ejemplo para la API REST de Flashing durante la fase 2.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Challenges",
+      "item": [
+        {
+          "name": "Get all challenges",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/challenges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "challenges"
+              ]
+            },
+            "description": "Recupera las plantillas de reto ordenadas por identificador. Con una base de datos vacía, el inicializador carga tres retos de ejemplo al arrancar el backend."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
