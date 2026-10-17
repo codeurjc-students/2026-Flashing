@@ -28,7 +28,14 @@ Los cambios se realizan mediante pull request. El control completo de GitHub Act
 
 Durante la fase 2 se han gestionado mediante issues y pull requests la inicialización de pruebas, las integraciones con MySQL y la API, las pruebas de sistema, la cobertura y GitHub Actions.
 
-Al cierre técnico de la fase 2, `main` contiene 13 commits y 9 cambios incorporados mediante pull request. Estas métricas representan el estado del repositorio antes de integrar esta actualización documental.
+Al incorporar la corrección final de cierre de la fase 2, el repositorio alcanza las siguientes métricas:
+
+- **15 commits** incorporados a `main`.
+- **11 pull requests** fusionadas.
+- **9 issues** utilizados para organizar el trabajo, todos cerrados.
+- **11 ramas de trabajo** empleadas para desarrollar pruebas, cobertura, integración continua, documentación y la limpieza final, sin contar `main`.
+
+Las cifras incluyen la pull request final de limpieza y actualización de métricas. Las ramas fusionadas se eliminan para mantener el repositorio ordenado; su trabajo continúa disponible en el historial de `main` y en las pull requests cerradas.
 
 ## Enlaces
 

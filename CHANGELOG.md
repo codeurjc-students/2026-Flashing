@@ -38,5 +38,7 @@ y el proyecto utiliza [versionado semántico](https://semver.org/lang/es/).
 
 - Año del diagrama de Gantt actualizado de 2025 a 2026.
 - Errores tipográficos y referencias desactualizadas de la documentación inicial.
+- Eliminada una clase de prueba vacía y duplicada incorporada accidentalmente durante la reorganización documental.
+- Actualizadas las métricas finales de commits, ramas, issues y pull requests de la fase 2.
 
 [Sin publicar]: https://github.com/codeurjc-students/2026-Flashing/commits/main
