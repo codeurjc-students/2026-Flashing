@@ -1,0 +1,70 @@
+name: Basic quality control
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: basic-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-unit:
+    name: Backend - compile and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Compile backend and run unit tests
+        working-directory: backend
+        run: mvn -B test
+
+  frontend-unit:
+    name: Frontend - build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Check frontend types
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Run frontend unit tests
+        working-directory: frontend
+        run: npm test
+
