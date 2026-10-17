@@ -216,6 +216,10 @@ El workflow **Complete quality control** se ejecuta en pull requests dirigidas a
 
 Ambos workflows también admiten ejecución manual mediante `workflow_dispatch`. La rama `main` está destinada a exigir que los jobs completos terminen correctamente antes del merge.
 
+La siguiente evidencia corresponde a una pull request dirigida a `main`. Los jobs completos del backend y del frontend finalizaron correctamente, GitHub los identificó como controles obligatorios y confirmó que no existían conflictos con la rama base:
+
+![Controles completos obligatorios superados en GitHub Actions](images/testing/github-actions-complete.png)
+
 ## Proceso de desarrollo
 
 Cada cambio parte de un issue con criterios de aceptación. Se crea una rama `feature/*`, `fix/*` o `docs/*`, se realizan commits pequeños y se publica una pull request que enlaza el issue mediante `Closes #N`.
