@@ -3,6 +3,7 @@ package isiperez.flashing.security;
 import isiperez.flashing.dto.AuthTokensDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -12,9 +13,12 @@ public class AuthenticationCookies {
     public static final String ACCESS_COOKIE = "AuthToken";
     public static final String REFRESH_COOKIE = "RefreshToken";
     private final JwtTokenService tokenService;
+    private final boolean secure;
 
-    public AuthenticationCookies(JwtTokenService tokenService) {
+    public AuthenticationCookies(JwtTokenService tokenService,
+            @Value("${app.cookies.secure:true}") boolean secure) {
         this.tokenService = tokenService;
+        this.secure = secure;
     }
 
     public void write(AuthTokensDTO tokens, HttpServletResponse response) {
@@ -32,7 +36,7 @@ public class AuthenticationCookies {
             HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
             .httpOnly(true)
-            .secure(true)
+            .secure(secure)
             .sameSite("Strict")
             .path(path)
             .maxAge(Duration.ofSeconds(seconds))

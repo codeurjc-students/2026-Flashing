@@ -6,9 +6,9 @@ El cliente web utiliza exclusivamente cookies. El navegador recibe los JWT media
 
 - `AuthToken`: JWT de acceso, con duración de 15 minutos y ruta `/api`.
 - `RefreshToken`: JWT de renovación, con duración de 7 días y ruta `/api/v1/auth`.
-- Las cookies JWT y CSRF son siempre `Secure`, `HttpOnly` y `SameSite=Strict`. No existe ninguna variable para desactivar `Secure`, tampoco en desarrollo o detrás de un proxy. Las cookies JWT no incluyen atributo `Domain`.
+- Las cookies JWT y CSRF son `Secure` por defecto, `HttpOnly` y `SameSite=Strict`. Las cookies JWT no incluyen atributo `Domain`. Únicamente los servidores de pruebas que cargan `TestcontainersConfiguration` desactivan `Secure` mediante `src/test/resources/test-cookies.properties`, para ejecutar las pruebas existentes sobre HTTP. Este archivo no se incluye en la aplicación de producción.
 - `Secure` exige HTTPS para transportar la cookie; no cifra por sí mismo su contenido almacenado. TLS cifra la comunicación y los JWT se firman para detectar modificaciones.
-- La autenticación con estas cookies requiere un entorno HTTPS. Este cambio no configura certificados ni modifica el arranque HTTP existente de Spring o Vite.
+- Fuera de ese entorno de pruebas, la autenticación con estas cookies requiere HTTPS. Este cambio no configura certificados ni modifica el arranque HTTP existente de Spring o Vite.
 - `JWT_SECRET` debe ser un secreto aleatorio privado de al menos 32 bytes en el despliegue. Si no se configura, se genera una clave local aleatoria al arrancar y los tokens previos dejan de ser válidos después de reiniciar.
 
 ## CSRF

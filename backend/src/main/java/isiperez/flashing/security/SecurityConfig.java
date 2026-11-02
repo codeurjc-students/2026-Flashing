@@ -1,6 +1,7 @@
 package isiperez.flashing.security;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,12 +18,13 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @Configuration
 public class SecurityConfig {
     @Bean
-    public CookieCsrfTokenRepository csrfTokenRepository() {
+    public CookieCsrfTokenRepository csrfTokenRepository(
+            @Value("${app.cookies.secure:true}") boolean secure) {
         CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
         repository.setCookieName("FlashingCsrf");
         repository.setHeaderName("X-CSRF-TOKEN");
         repository.setCookieCustomizer(cookie ->
-            cookie.httpOnly(true).secure(true).sameSite("Strict").path("/api"));
+            cookie.httpOnly(true).secure(secure).sameSite("Strict").path("/api"));
         return repository;
     }
 

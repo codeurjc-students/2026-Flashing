@@ -12,7 +12,7 @@ y el proyecto utiliza [versionado semántico](https://semver.org/lang/es/).
 - Registro y gestión del perfil con Spring Security, roles de usuario y administrador y JWT en cookies HttpOnly.
 - Protección CSRF para las operaciones de escritura, incluidas autenticación, renovación y cierre de sesión.
 - Páginas de registro, inicio de sesión y perfil con autenticación por cookies y pruebas de seguridad e integración.
-- Cookies JWT y CSRF siempre Secure y SameSite=Strict, sin opción de desactivar Secure, y clave JWT aleatoria local cuando no se configura un secreto.
+- Cookies JWT y CSRF Secure por defecto y SameSite=Strict, con excepción HTTP para los servidores de pruebas con Testcontainers, y clave JWT aleatoria local cuando no se configura un secreto.
 - Estructura inicial del proyecto separada en `backend` y `frontend`.
 - API REST desarrollada con Java, Spring Boot y una arquitectura por capas.
 - Entidad principal `Challenge`, repositorio JPA, servicio, DTO y mapper de MapStruct.
