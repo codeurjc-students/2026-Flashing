@@ -24,6 +24,7 @@ Flashing es una red social de retos creativos cortos, denominados *flashes*. Cad
 - [Análisis](docs/ANALISIS.md): pantallas, navegación, entidades, permisos, imágenes, gráficos y algoritmo avanzado.
 - [Seguimiento](docs/SEGUIMIENTO.md): uso de issues, pull requests, ramas y GitHub Project.
 - [Guía de desarrollo](docs/DESARROLLO.md): arquitectura, tecnologías, ejecución, pruebas, cobertura, CI y uso de la API.
+- [Autenticación web](docs/AUTENTICACION.md): cookies HttpOnly, protección CSRF y configuración para HTTPS.
 - [Autores](docs/AUTORES.md): autoría del proyecto.
 - [Uso de herramientas de IA](docs/AI_USAGE.md): registro detallado del uso de inteligencia artificial.
 - [Registro de cambios](CHANGELOG.md): cambios notables realizados en cada versión.
