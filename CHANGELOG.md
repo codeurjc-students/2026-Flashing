@@ -9,6 +9,9 @@ y el proyecto utiliza [versionado semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Landing de prelanzamiento responsive con la identidad visual de Flashing, demostraciones interactivas y formularios de cuenta. Shiny Text, Tear Ticket y Slide Commit de React Bits integrados mediante shadcn, adaptados a móvil, teclado y movimiento reducido.
+- Pantalla de espera con una única opción voluntaria de aviso de lanzamiento, fecha de consentimiento y posibilidad de desactivarlo.
+- Página informativa de privacidad y pruebas del registro y las preferencias en cliente, API y MySQL.
 - Registro y gestión del perfil con Spring Security, roles de usuario y administrador y JWT en cookies HttpOnly.
 - Protección CSRF para las operaciones de escritura, incluidas autenticación, renovación y cierre de sesión.
 - Páginas de registro, inicio de sesión y perfil con autenticación por cookies y pruebas de seguridad e integración.

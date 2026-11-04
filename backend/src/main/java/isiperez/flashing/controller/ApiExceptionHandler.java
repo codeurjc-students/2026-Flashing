@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -52,6 +53,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorDTO> handleBadRequest(IllegalArgumentException exception,
             HttpServletRequest request) {
         return error(HttpStatus.BAD_REQUEST, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorDTO> handleUnreadableBody(HttpMessageNotReadableException exception,
+            HttpServletRequest request) {
+        return error(HttpStatus.BAD_REQUEST, "Request body is not valid", request, Map.of());
     }
 
     private ResponseEntity<ApiErrorDTO> error(HttpStatus status, String message, HttpServletRequest request,

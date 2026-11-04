@@ -1,6 +1,7 @@
 package isiperez.flashing.service;
 
 import isiperez.flashing.dto.RegisterUserDTO;
+import isiperez.flashing.dto.NotificationPreferencesDTO;
 import isiperez.flashing.dto.UpdateUserDTO;
 import isiperez.flashing.dto.UserDTO;
 import isiperez.flashing.dto.UserMapper;
@@ -44,6 +45,7 @@ public class UserService {
         User user = new User(request.username().trim(), request.displayName().trim(),
             request.email().trim().toLowerCase(), passwordEncoder.encode(request.password()), UserRole.USER,
             request.timezone());
+        user.updateNotificationPreferences(Boolean.TRUE.equals(request.launchUpdates()));
         return mapper.toDTO(repository.save(user));
     }
 
@@ -78,6 +80,14 @@ public class UserService {
         user.setUsername("deleted_" + user.getId());
         user.setEmail("deleted_" + user.getId() + "@flashing.invalid");
         user.setDisplayName("Deleted user");
+        user.updateNotificationPreferences(false);
+    }
+
+    @Transactional
+    public UserDTO updateNotificationPreferences(String email, NotificationPreferencesDTO request) {
+        User user = findActiveByEmail(email);
+        user.updateNotificationPreferences(request.launchUpdates());
+        return mapper.toDTO(user);
     }
 
     @Transactional

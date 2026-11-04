@@ -1,43 +1,51 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { ApiError, login } from '~/services/auth-service';
+import { AuthLayout } from '~/components/auth-layout';
+import { useSession } from '~/components/session-provider';
+import { FormSlideCommit } from '~/components/form-slide-commit';
+import { login } from '~/services/auth-service';
+import { authErrorMessage } from '~/services/auth-errors';
 
 export function meta() {
-  return [{ title: 'Iniciar sesión | Flashing' }];
+  return [{ title: 'Tu próximo flash empieza aquí | Flashing' }];
 }
 
 export default function Login() {
   const navigate = useNavigate();
+  const { user, loading, setUser } = useSession();
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => { if (user) navigate('/welcome', { replace: true }); }, [user, navigate]);
+
+  async function handleSubmit(element: HTMLFormElement) {
+    if (submitting || loading) return;
     setError('');
     setSubmitting(true);
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(element);
     try {
-      await login(String(form.get('email')), String(form.get('password')));
-      navigate('/profile');
+      setUser(await login(String(form.get('email')).trim(), String(form.get('password'))));
+      navigate('/welcome', { replace: true });
     } catch (exception) {
-      setError(exception instanceof ApiError && exception.status === 401
-        ? 'El correo o la contraseña no son correctos.'
-        : 'No se ha podido iniciar sesión.');
-    } finally {
-      setSubmitting(false);
-    }
+      setError(authErrorMessage(exception));
+      throw exception;
+    } finally { setSubmitting(false); }
   }
 
   return (
-    <main>
-      <h1>Iniciar sesión</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Correo electrónico <input name="email" type="email" required /></label>
-        <label>Contraseña <input name="password" type="password" required /></label>
-        {error && <p role="alert">{error}</p>}
-        <button disabled={submitting} type="submit">{submitting ? 'Entrando…' : 'Entrar'}</button>
+    <AuthLayout>
+      <h1>Qué bien<br />que estés aquí.</h1>
+      <p className="card-description">Entra para consultar tu cuenta y elegir cómo quieres enterarte del lanzamiento.</p>
+      <form ref={formRef} className="account-form" aria-busy={submitting}>
+        <fieldset className="form-fields" disabled={submitting}>
+          <label>Correo electrónico<input name="email" type="email" autoComplete="email" maxLength={254} required /></label>
+          <label>Contraseña<input name="password" type="password" autoComplete="current-password" required /></label>
+        </fieldset>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        <FormSlideCommit formRef={formRef} label="Entrar" disabled={submitting || loading} onConfirm={handleSubmit} />
       </form>
-      <p>¿Aún no tienes cuenta? <Link to="/register">Regístrate</Link>.</p>
-    </main>
+      <p className="form-alternative">¿Todavía no tienes cuenta? <Link to="/register">Hazte un hueco.</Link></p>
+    </AuthLayout>
   );
 }

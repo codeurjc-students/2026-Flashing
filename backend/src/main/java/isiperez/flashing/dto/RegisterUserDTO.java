@@ -12,5 +12,6 @@ public record RegisterUserDTO(
         @NotBlank @Size(max = 60) String displayName,
         @NotBlank @Email @Size(max = 254) String email,
         @NotBlank @Size(min = 8, max = 64) String password,
-        @NotBlank String timezone) {
+        @NotBlank String timezone,
+        Boolean launchUpdates) {
 }

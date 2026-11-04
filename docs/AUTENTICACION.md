@@ -30,6 +30,14 @@ En desarrollo, abrir el frontend y utilizar su proxy `/api` hacia Spring. Manten
 
 El frontend intenta renovar una vez cuando una petición protegida recibe 401 y repite la petición original. Una respuesta 403 por CSRF o permisos no desencadena renovación. Logout elimina las cookies del navegador; no incorpora una lista de revocación de JWT emitidos. La eliminación de cuenta deshabilita al usuario y elimina las cookies de autenticación.
 
+## Cuentas de prelanzamiento
+
+La raíz `/` muestra la landing pública. `/register` permite crear una cuenta y `/login` da acceso a `/welcome`, una pantalla de espera del lanzamiento. `/profile` redirige a esta pantalla; la web pública no incluye las funciones de la futura aplicación móvil.
+
+El registro admite una única opción voluntaria: `launchUpdates` para recibir un correo cuando se lance Flashing. Si se omite, el aviso queda desactivado. Se guarda en MySQL junto con la fecha de activación del consentimiento. El usuario puede cambiar su elección mediante `PUT /api/v1/users/me/notifications`, protegido por autenticación y CSRF, o eliminar su cuenta para cancelar el aviso. No hay suscripciones a promociones ni novedades.
+
+El registro no envía correos ni verifica la titularidad del email. Al llegar el lanzamiento se utilizarán las direcciones de los usuarios activos que mantengan `launchUpdates` activado para gestionar manualmente el envío de un único correo genérico. Esta implementación no añade un exportador ni un servicio automático de envío. Los botones de las tiendas indican que la app todavía no está publicada.
+
 ## Pruebas y evolución móvil
 
 Las pruebas HTTP comprueban los atributos de las cookies, rechazo de Bearer y de refresh en JSON, CSRF ausente o incorrecto, renovación, logout y roles. Las pruebas de navegador comprueban el flujo web; las de integración Node utilizan un almacén de cookies porque `fetch` de Node no incorpora el del navegador.

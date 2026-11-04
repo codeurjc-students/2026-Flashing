@@ -12,6 +12,11 @@ export interface RegisterUser {
   email: string;
   password: string;
   timezone: string;
+  launchUpdates?: boolean;
+}
+
+export interface NotificationPreferences {
+  launchUpdates: boolean;
 }
 
 export interface UpdateUser {
@@ -57,6 +62,14 @@ export async function updateCurrentUser(data: UpdateUser): Promise<UserDTO> {
 
 export async function deleteCurrentUser(): Promise<void> {
   await request<void>('/api/v1/users/me', { method: 'DELETE' });
+}
+
+export async function updateNotificationPreferences(data: NotificationPreferences): Promise<UserDTO> {
+  return request<UserDTO>('/api/v1/users/me/notifications', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
 }
 
 export async function logout(): Promise<void> {

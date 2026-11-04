@@ -1,6 +1,7 @@
 package isiperez.flashing.controller;
 
 import isiperez.flashing.dto.RegisterUserDTO;
+import isiperez.flashing.dto.NotificationPreferencesDTO;
 import isiperez.flashing.dto.UpdateUserDTO;
 import isiperez.flashing.dto.UserDTO;
 import isiperez.flashing.service.UserService;
@@ -61,5 +62,11 @@ public class UserRestController {
         service.deleteCurrent(principal.getName());
         cookies.clear(response);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/notifications")
+    public UserDTO updateNotificationPreferences(Principal principal,
+            @Valid @RequestBody NotificationPreferencesDTO request) {
+        return service.updateNotificationPreferences(principal.getName(), request);
     }
 }
