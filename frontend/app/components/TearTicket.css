@@ -1,0 +1,212 @@
+.tear-ticket {
+  --tt-w: 460px;
+  --tt-h: 250px;
+  --tt-stub: 150px;
+  --tt-bg: #27272a;
+  --tt-stub-bg: #27272a;
+  --tt-ink: #f5f5f5;
+  --tt-edge: transparent;
+  --tt-edge-w: 1;
+  --tt-parallax: 6px;
+  --tt-body-w: 310px;
+  --tt-body-h: 250px;
+  --tt-inset: 8px;
+  --tt-span: 0.78;
+  --tt-art-radius: 8px;
+  --tt-fit: 1;
+
+  position: relative;
+  inline-size: min(var(--tt-w), 100%);
+  color: var(--tt-ink);
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tear-ticket[data-disabled] {
+  opacity: 0.6;
+}
+
+.tear-ticket__stage {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--tt-w);
+  block-size: var(--tt-h);
+  transform: scale(var(--tt-fit));
+  transform-origin: top left;
+}
+
+.tear-ticket[data-shift='x'] .tear-ticket__stage {
+  transform: translateX(calc(var(--tt-stub) * var(--tt-fit) / 2)) scale(var(--tt-fit));
+}
+
+.tear-ticket[data-shift='y'] .tear-ticket__stage {
+  transform: translateY(calc(var(--tt-stub) * var(--tt-fit) / 2)) scale(var(--tt-fit));
+}
+
+.tear-ticket__plane {
+  position: absolute;
+  inset: 0;
+}
+
+.tear-ticket__piece {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tear-ticket__piece--stub {
+  outline: 2px solid transparent;
+}
+
+.tear-ticket:has(.tear-ticket__piece--stub:focus-visible) {
+  outline: 3px solid var(--slate);
+  outline-offset: 6px;
+  border-radius: 20px;
+}
+
+.tear-ticket__edge {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tear-ticket__edge path {
+  fill: none;
+  stroke: var(--tt-edge);
+  stroke-width: var(--tt-edge-w);
+}
+
+.tear-ticket__paper {
+  position: absolute;
+  inset: 0;
+  background: var(--tt-bg);
+  pointer-events: auto;
+}
+
+.tear-ticket__paper--stub {
+  background: var(--tt-stub-bg);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tear-ticket__paper--stub:active { opacity: .85; }
+
+.tear-ticket[data-grabbing] .tear-ticket__paper--stub {
+  cursor: grabbing;
+}
+
+.tear-ticket[data-disabled] .tear-ticket__paper--stub {
+  cursor: default;
+}
+
+.tear-ticket__art {
+  position: absolute;
+  inset-block-start: var(--tt-inset);
+  inset-inline-start: var(--tt-inset);
+  inline-size: calc(var(--tt-body-w) - var(--tt-inset) * 2);
+  block-size: calc(var(--tt-body-h) * var(--tt-span) - var(--tt-inset) * 2);
+  border-radius: var(--tt-art-radius);
+  overflow: clip;
+}
+
+.tear-ticket__image {
+  position: absolute;
+  inset-block-start: calc(var(--tt-parallax) * -1);
+  inset-inline-start: calc(var(--tt-parallax) * -1);
+  inline-size: calc(100% + var(--tt-parallax) * 2);
+  max-inline-size: none;
+  block-size: calc(100% + var(--tt-parallax) * 2);
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+
+.tear-ticket[data-used] .tear-ticket__image {
+  filter: grayscale(1) brightness(0.75);
+}
+
+.tear-ticket__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--tt-bg) 0%,
+    color-mix(in srgb, var(--tt-bg) 72%, transparent) 30%,
+    color-mix(in srgb, var(--tt-bg) 18%, transparent) 58%,
+    transparent 80%
+  );
+}
+
+.tear-ticket__content {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--tt-w) - var(--tt-stub));
+  transition: opacity 500ms ease;
+}
+
+.tear-ticket[data-used] .tear-ticket__content {
+  opacity: 0.55;
+}
+
+.tear-ticket__stub {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--tt-stub);
+}
+
+.tear-ticket[data-orientation='vertical'] .tear-ticket__content {
+  inset-block-end: auto;
+  inline-size: 100%;
+  block-size: calc(var(--tt-h) - var(--tt-stub));
+}
+
+.tear-ticket[data-orientation='vertical'] .tear-ticket__stub {
+  inset-block-start: auto;
+  inset-inline-start: 0;
+  inline-size: auto;
+  block-size: var(--tt-stub);
+}
+
+.tear-ticket[data-instant] .tear-ticket__stage,
+.tear-ticket[data-instant] .tear-ticket__content,
+.tear-ticket[data-instant] .tear-ticket__image {
+  transition-duration: 0ms;
+}
+
+.tear-ticket__fibres {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tear-ticket__fibres path {
+  fill: none;
+  stroke: var(--tt-bg);
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.tear-ticket__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tear-ticket__stage { transition: transform 300ms var(--ease-out); }
+}

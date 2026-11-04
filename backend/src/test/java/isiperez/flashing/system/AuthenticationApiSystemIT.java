@@ -123,6 +123,28 @@ class AuthenticationApiSystemIT {
             .header("X-CSRF-TOKEN", csrfToken);
     }
 
+    @Test
+    void notificationPreferencesShouldRequireAuthenticationAndCsrfAndPersistChoices() {
+        CookieFilter browser = new CookieFilter();
+        withCsrf(browser).body(Map.of("username", "earlybird", "displayName", "Early bird",
+                "email", "bird@example.com", "password", "Password_1", "timezone", "UTC",
+                "launchUpdates", true))
+            .post("/api/v1/users").then().statusCode(201)
+            .body("launchUpdates", equalTo(true));
+        login(browser, "bird@example.com");
+        Map<String, Boolean> preferences = Map.of("launchUpdates", false);
+
+        withCsrf(new CookieFilter()).body(preferences).put("/api/v1/users/me/notifications")
+            .then().statusCode(401);
+        given().port(port).filter(browser).contentType("application/json").body(preferences)
+            .put("/api/v1/users/me/notifications").then().statusCode(403);
+        withCsrf(browser).body(preferences).put("/api/v1/users/me/notifications")
+            .then().statusCode(200).body("launchUpdates", equalTo(false))
+            .body("role", equalTo("USER"));
+        given().port(port).filter(browser).get("/api/v1/users/me").then().statusCode(200)
+            .body("launchUpdates", equalTo(false));
+    }
+
     private io.restassured.response.Response login(CookieFilter browser, String email) {
         return withCsrf(browser).body(Map.of("email", email, "password", "Password_1"))
             .post("/api/v1/auth/login").then().statusCode(204).extract().response();

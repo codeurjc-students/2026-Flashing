@@ -8,4 +8,5 @@ export interface UserDTO {
   createdAt: string;
   lastLoginAt: string | null;
   status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  launchUpdates: boolean;
 }

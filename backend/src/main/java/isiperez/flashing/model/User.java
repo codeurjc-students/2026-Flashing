@@ -30,6 +30,8 @@ public class User {
     private Instant lastLoginAt;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+    private boolean launchUpdates;
+    private Instant launchUpdatesConsentAt;
 
     protected User() {
     }
@@ -62,4 +64,11 @@ public class User {
     public void setLastLoginAt(Instant lastLoginAt) { this.lastLoginAt = lastLoginAt; }
     public UserStatus getStatus() { return status; }
     public void setStatus(UserStatus status) { this.status = status; }
+    public boolean isLaunchUpdates() { return launchUpdates; }
+    public Instant getLaunchUpdatesConsentAt() { return launchUpdatesConsentAt; }
+
+    public void updateNotificationPreferences(boolean launchUpdates) {
+        if (launchUpdates && !this.launchUpdates) launchUpdatesConsentAt = Instant.now();
+        this.launchUpdates = launchUpdates;
+    }
 }

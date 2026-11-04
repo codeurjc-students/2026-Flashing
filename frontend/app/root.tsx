@@ -8,6 +8,8 @@ import {
   Link,
 } from 'react-router';
 import type { Route } from './+types/root';
+import { SessionProvider } from './components/session-provider';
+import './styles/site.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,19 +17,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <meta name="theme-color" content="#ffe500" />
+        <link rel="icon" href="/branding/flashing.svg" type="image/svg+xml" />
+        <link rel="preload" href="/fonts/ClashDisplay-Medium.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <Meta />
         <Links />
       </head>
       <body>
-        <header>
-          <nav aria-label="Navegación principal">
-            <Link to="/">Flashing</Link>{' '}
-            <Link to="/login">Iniciar sesión</Link>{' '}
-            <Link to="/register">Registro</Link>{' '}
-            <Link to="/profile">Mi perfil</Link>
-          </nav>
-        </header>
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -37,11 +33,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function Root() {
-  return <Outlet />;
+  return <SessionProvider><Outlet /></SessionProvider>;
 }
 
 export function HydrateFallback() {
-  return <p role="status">Cargando aplicación…</p>;
+  return <main className="boot-state"><img src="/branding/flashing.svg" alt="Flashing" width="40" height="60" /><p role="status">Un momento…</p></main>;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -54,9 +50,10 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main>
+    <main className="error-page content-grid"><div className="error-content">
       <h1>Error</h1>
       <p role="alert">{message}</p>
-    </main>
+      <Link className="pill" to="/">Volver a Flashing</Link>
+    </div></main>
   );
 }
