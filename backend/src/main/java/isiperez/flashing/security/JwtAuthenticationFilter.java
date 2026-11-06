@@ -29,7 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        String token = accessTokenFromCookies(request);
+        String authorization = request.getHeader("Authorization");
+        // Una cabecera explícita nunca se sustituye por una cookie.
+        String token = authorization == null ? accessTokenFromCookies(request)
+            : authorization.startsWith("Bearer ") ? authorization.substring(7) : null;
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 String email = tokenService.getSubject(token, TokenType.ACCESS);

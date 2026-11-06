@@ -46,13 +46,22 @@ public class SecurityConfig {
             DaoAuthenticationProvider provider, CookieCsrfTokenRepository csrfTokenRepository) throws Exception {
         http
             .authenticationProvider(provider)
-            .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
+            .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository)
+                .ignoringRequestMatchers(request -> {
+                    String authorization = request.getHeader("Authorization");
+                    boolean bearer = authorization != null && authorization.startsWith("Bearer ");
+                    boolean mobileLogin = HttpMethod.POST.matches(request.getMethod())
+                        && (request.getServletPath().equals("/api/v1/auth/mobile/login")
+                            || request.getServletPath().equals("/api/v1/auth/mobile/refresh"));
+                    return bearer || mobileLogin;
+                }))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
-                    "/api/v1/auth/logout").permitAll()
+                    "/api/v1/auth/logout", "/api/v1/auth/mobile/login",
+                    "/api/v1/auth/mobile/refresh").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/challenges", "/api/v1/challenges/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Flashing",
+    "slug": "flashing",
+    "scheme": "flashing",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/branding/flashing.png",
+          "imageWidth": 110,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "expo-secure-store",
+      "expo-build-properties"
+    ]
+  }
+}

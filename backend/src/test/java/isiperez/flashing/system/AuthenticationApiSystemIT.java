@@ -74,7 +74,7 @@ class AuthenticationApiSystemIT {
         String accessToken = response.cookie("AuthToken");
 
         given().port(port).header("Authorization", "Bearer " + accessToken)
-            .get("/api/v1/users/me").then().statusCode(401);
+            .get("/api/v1/users/me").then().statusCode(200);
 
         withCsrf(new CookieFilter())
             .body(Map.of("refreshToken", response.cookie("RefreshToken")))
@@ -143,6 +143,40 @@ class AuthenticationApiSystemIT {
             .body("role", equalTo("USER"));
         given().port(port).filter(browser).get("/api/v1/users/me").then().statusCode(200)
             .body("launchUpdates", equalTo(false));
+    }
+
+    @Test
+    void mobileLoginAndRefreshShouldReturnTokensAndSupportBearerWrites() {
+        saveUser("mobile", UserRole.USER);
+        var response = given().port(port).contentType("application/json")
+            .body(Map.of("email", "mobile@example.com", "password", "Password_1"))
+            .post("/api/v1/auth/mobile/login").then().statusCode(200).extract().response();
+        assertThat(response.getHeaders().getValues("Set-Cookie")).isEmpty();
+        assertThat(response.header("Cache-Control")).contains("no-store");
+        String access = response.path("accessToken");
+        String refresh = response.path("refreshToken");
+        given().port(port).header("Authorization", "Bearer " + access)
+            .get("/api/v1/users/me").then().statusCode(200);
+        given().port(port).header("Authorization", "Bearer " + access)
+            .contentType("application/json").body(Map.of("launchUpdates", true))
+            .put("/api/v1/users/me/notifications").then().statusCode(200);
+        given().port(port).contentType("application/json")
+            .body(Map.of("refreshToken", refresh))
+            .post("/api/v1/auth/mobile/refresh").then().statusCode(200);
+        given().port(port).contentType("application/json")
+            .body(Map.of("refreshToken", access))
+            .post("/api/v1/auth/mobile/refresh").then().statusCode(401);
+        given().port(port).header("Authorization", "Bearer " + refresh)
+            .get("/api/v1/users/me").then().statusCode(401);
+
+        CookieFilter browser = new CookieFilter();
+        login(browser, "mobile@example.com");
+        given().port(port).filter(browser).header("Authorization", "Bearer invalid")
+            .contentType("application/json").body(Map.of("launchUpdates", false))
+            .put("/api/v1/users/me/notifications").then().statusCode(401);
+        given().port(port).contentType("application/json")
+            .body(Map.of("email", "mobile@example.com", "password", "incorrect"))
+            .post("/api/v1/auth/mobile/login").then().statusCode(401);
     }
 
     private io.restassured.response.Response login(CookieFilter browser, String email) {

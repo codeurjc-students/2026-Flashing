@@ -1,6 +1,6 @@
 # Autenticación web
 
-El cliente web utiliza exclusivamente cookies. El navegador recibe los JWT mediante `Set-Cookie`; no se devuelven en JSON, no se guardan en `localStorage` y no se envían cabeceras Bearer. No hay soporte móvil de autenticación implementado todavía.
+El cliente web utiliza exclusivamente cookies. El navegador recibe los JWT mediante `Set-Cookie`; no se devuelven en JSON, no se guardan en `localStorage` y no se envían cabeceras Bearer. El móvil utiliza endpoints específicos que devuelven JWT en JSON.
 
 ## Cookies y HTTPS
 
@@ -15,7 +15,7 @@ El cliente web utiliza exclusivamente cookies. El navegador recibe los JWT media
 
 Spring Security mantiene una cookie CSRF HttpOnly y el cliente obtiene su representación en `GET /api/v1/auth/csrf`. Antes de un POST, PUT o DELETE, el cliente consulta ese endpoint y envía el valor devuelto mediante `X-CSRF-TOKEN`. El token CSRF no es un JWT y no identifica al usuario.
 
-Se mantiene el tratamiento enmascarado de tokens de Spring Security. Registro, login, renovación, logout y cambios de perfil también requieren CSRF. No se han añadido excepciones por utilizar JWT ni se ha reintroducido CORS. Las respuestas de autenticación no se almacenan en caché.
+Se mantiene el tratamiento enmascarado de tokens de Spring Security. Las escrituras autenticadas por cookies, incluidos registro, login, renovación, logout y cambios de perfil, requieren CSRF. Los dos endpoints móviles y las peticiones con cabecera Bearer quedan excluidos. Si existe una cabecera Authorization, el filtro utiliza exclusivamente esa credencial y no recurre a cookies. Las respuestas de autenticación no se almacenan en caché.
 
 En desarrollo, abrir el frontend y utilizar su proxy `/api` hacia Spring. Mantener el mismo host al navegar: `localhost` y `127.0.0.1` no comparten cookies.
 
@@ -40,8 +40,12 @@ El registro no envía correos ni verifica la titularidad del email. Al llegar el
 
 ## Pruebas y evolución móvil
 
-Las pruebas HTTP comprueban los atributos de las cookies, rechazo de Bearer y de refresh en JSON, CSRF ausente o incorrecto, renovación, logout y roles. Las pruebas de navegador comprueban el flujo web; las de integración Node utilizan un almacén de cookies porque `fetch` de Node no incorpora el del navegador.
+Las pruebas HTTP comprueban los atributos de las cookies, autenticación Bearer y rechazo de refresh en JSON en el endpoint web, CSRF ausente o incorrecto, renovación, logout y roles. Las pruebas de navegador comprueban el flujo web; las de integración Node utilizan un almacén de cookies porque `fetch` de Node no incorpora el del navegador.
 
-Cuando se desarrolle Expo se podrá añadir un mecanismo Bearer específico para el móvil con almacenamiento seguro del dispositivo. No se ha habilitado esa alternativa ni se ha desactivado CSRF para anticiparla. La lógica de usuarios y JWT sigue separada del transporte de cookies.
+El móvil llama a `POST /api/v1/auth/mobile/login` con correo y contraseña y a `POST /api/v1/auth/mobile/refresh` con `refreshToken`. Ambos devuelven `accessToken` y `refreshToken` en JSON con Cache-Control no-store. Se reutiliza AuthenticationService. Los endpoints web conservan su contrato de cookies.
+
+La app mantiene el token de acceso en memoria y el de renovación en Expo SecureStore. Restaura la sesión al arrancar y renueva una vez ante 401. El cierre de sesión elimina los tokens del dispositivo. Los tokens emitidos siguen siendo válidos hasta su expiración.
+
+El cliente permite HTTP únicamente con `__DEV__` activo. Las compilaciones de producción requieren `EXPO_PUBLIC_API_URL` con HTTPS. La configuración nativa permite tráfico HTTP solo con `APP_VARIANT=development`. Las instrucciones de ejecución están en [la guía móvil](../mobile/README.md).
 
 Referencia: [protección CSRF de Spring Security](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html).
