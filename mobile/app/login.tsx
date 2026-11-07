@@ -19,7 +19,6 @@ export default function Login() {
   const { user, loading, setUser } = useMobileSession();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [focused, setFocused] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -69,8 +68,8 @@ export default function Login() {
               <View style={styles.field}>
                 <Text style={styles.label}>Correo electrónico</Text>
                 <TextInput
-                  style={[styles.input, focused === 'email' && styles.focused]} value={email} onChangeText={setEmail}
-                  editable={!submitting} onFocus={() => setFocused('email')} onBlur={() => setFocused('')}
+                  style={styles.input} value={email} onChangeText={setEmail}
+                  editable={!submitting}
                   placeholder="Introduce tu correo electrónico" placeholderTextColor={theme.slate}
                   keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
                   autoComplete="email" textContentType="emailAddress"
@@ -80,9 +79,9 @@ export default function Login() {
               </View>
               <View style={styles.field}>
                 <Text style={styles.label}>Contraseña</Text>
-                <View style={[styles.passwordField, focused === 'password' && styles.focused]}>
+                <View style={styles.passwordField}>
                   <TextInput
-                    editable={!submitting} onFocus={() => setFocused('password')} onBlur={() => setFocused('')}
+                    editable={!submitting}
                     ref={passwordInput} style={[styles.input, styles.passwordInput]}
                     value={password} onChangeText={setPassword}
                     placeholder="Introduce tu contraseña" placeholderTextColor={theme.slate}
@@ -122,22 +121,17 @@ const styles = StyleSheet.create({
   backdrop: { position: 'absolute', right: -170, bottom: -100, opacity: 0.055, transform: [{ rotate: '-15deg' }] },
   backdropLogo: { width: 500, height: 740 },
   brand: { flexDirection: 'column', alignItems: 'flex-start', gap: 0 },
-  logo: { width: 32, height: 48 },
   wordmark: { fontFamily: theme.font, fontSize: 90, letterSpacing: -3, color: theme.black },
-  headline: { fontFamily: theme.font, fontSize: 48, lineHeight: 51, letterSpacing: -2.4, color: theme.black },
-  life: { color: theme.white },
   form: { gap: 30, marginTop: 20 },
-  focused: { borderColor: theme.black },
   description: { fontFamily: theme.font, fontSize: 20, lineHeight: 23, color: theme.black },
   field: { gap: 8 },
   label: { fontFamily: theme.font, fontSize: 15, color: theme.black },
   input: { minHeight: 54, backgroundColor: theme.white, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontFamily: theme.font, fontSize: 16, color: theme.black },
   passwordField: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, backgroundColor: theme.white },
-  passwordInput: { flex: 1, borderWidth: 0, minWidth: 0 },
+  passwordInput: { flex: 1, minWidth: 0 },
   reveal: { minWidth: 56, minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
   revealText: { fontFamily: theme.font, color: theme.slate, fontSize: 14 },
   submit: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: theme.black, borderRadius: 100, paddingHorizontal: 22, paddingVertical: 16, minHeight: 54 },
   submitText: { fontFamily: theme.font, fontSize: 17, color: theme.white },
   error: { fontFamily: theme.font, fontSize: 14, lineHeight: 20, textAlign: 'center', color: theme.slate },
-  footer: { fontFamily: theme.font, color: theme.black, fontSize: 16, textAlign: 'center', lineHeight: 23 },
 });

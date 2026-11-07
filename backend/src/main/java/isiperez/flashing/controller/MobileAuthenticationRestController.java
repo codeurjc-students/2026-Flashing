@@ -3,6 +3,7 @@ package isiperez.flashing.controller;
 import isiperez.flashing.dto.AuthTokensDTO;
 import isiperez.flashing.dto.LoginRequestDTO;
 import isiperez.flashing.dto.RefreshTokenDTO;
+import isiperez.flashing.security.TokenType;
 import isiperez.flashing.service.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
@@ -30,5 +31,11 @@ public class MobileAuthenticationRestController {
     public ResponseEntity<AuthTokensDTO> refresh(@Valid @RequestBody RefreshTokenDTO request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
             .body(service.refresh(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenDTO request) {
+        service.revoke(request.refreshToken(), TokenType.REFRESH);
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 }

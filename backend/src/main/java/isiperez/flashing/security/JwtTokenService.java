@@ -1,6 +1,7 @@
 package isiperez.flashing.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -29,21 +30,38 @@ public class JwtTokenService {
         this.refreshDuration = Duration.ofDays(refreshDays);
     }
 
-    public String generateAccessToken(UserDetails user) {
-        return generate(user, TokenType.ACCESS, accessDuration);
+    public String generateAccessToken(UserDetails user, String sessionId) {
+        return generate(user, sessionId, UUID.randomUUID().toString(), TokenType.ACCESS, accessDuration);
     }
 
-    public String generateRefreshToken(UserDetails user) {
-        return generate(user, TokenType.REFRESH, refreshDuration);
+    public String generateRefreshToken(UserDetails user, String sessionId, String refreshId) {
+        return generate(user, sessionId, refreshId, TokenType.REFRESH, refreshDuration);
     }
 
-    public String getSubject(String token, TokenType expectedType) {
-        Claims claims = Jwts.parser().verifyWith(secretKey).build()
-            .parseSignedClaims(token).getPayload();
+    public Claims getClaims(String token, TokenType expectedType) {
+        return getClaims(token, expectedType, false);
+    }
+
+    public Claims getClaimsForRevocation(String token, TokenType expectedType) {
+        return getClaims(token, expectedType, true);
+    }
+
+    private Claims getClaims(String token, TokenType expectedType, boolean allowExpired) {
+        Claims claims;
+        try {
+            claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+        } catch (ExpiredJwtException exception) {
+            if (!allowExpired) throw exception;
+            // La firma se verifica antes de comprobar el vencimiento.
+            claims = exception.getClaims();
+        }
         if (!expectedType.name().equals(claims.get("type", String.class))) {
             throw new IllegalArgumentException("Unexpected token type");
         }
-        return claims.getSubject();
+        if (claims.get("sid", String.class) == null || claims.getId() == null) {
+            throw new IllegalArgumentException("Missing session or token identifier");
+        }
+        return claims;
     }
 
     public long getAccessTokenSeconds() {
@@ -54,12 +72,13 @@ public class JwtTokenService {
         return refreshDuration.toSeconds();
     }
 
-    private String generate(UserDetails user, TokenType type, Duration duration) {
+    private String generate(UserDetails user, String sessionId, String tokenId, TokenType type, Duration duration) {
         Instant now = Instant.now();
         return Jwts.builder()
-            .id(UUID.randomUUID().toString())
+            .id(tokenId)
             .subject(user.getUsername())
             .claim("type", type.name())
+            .claim("sid", sessionId)
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plus(duration)))
             .signWith(secretKey)

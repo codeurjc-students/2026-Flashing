@@ -5,8 +5,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
 import jakarta.servlet.http.Cookie;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import isiperez.flashing.repository.AuthSessionRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,10 +23,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenService tokenService;
+    private final AuthSessionRepository sessions;
 
-    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtTokenService tokenService) {
+    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtTokenService tokenService,
+            AuthSessionRepository sessions) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
+        this.sessions = sessions;
     }
 
     @Override
@@ -35,8 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : authorization.startsWith("Bearer ") ? authorization.substring(7) : null;
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                String email = tokenService.getSubject(token, TokenType.ACCESS);
-                UserDetails user = userDetailsService.loadUserByUsername(email);
+                Claims claims = tokenService.getClaims(token, TokenType.ACCESS);
+                if (!sessions.existsByIdAndExpiresAtAfter(claims.get("sid", String.class), Instant.now())) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                UserDetails user = userDetailsService.loadUserByUsername(claims.getSubject());
                 if (!user.isEnabled()) {
                     filterChain.doFilter(request, response);
                     return;

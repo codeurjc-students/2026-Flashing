@@ -3,6 +3,7 @@ package isiperez.flashing.controller;
 import isiperez.flashing.dto.LoginRequestDTO;
 import isiperez.flashing.dto.CsrfTokenDTO;
 import isiperez.flashing.security.AuthenticationCookies;
+import isiperez.flashing.security.TokenType;
 import isiperez.flashing.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +58,12 @@ public class AuthenticationRestController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = AuthenticationCookies.REFRESH_COOKIE, required = false) String refreshToken,
+            @CookieValue(name = AuthenticationCookies.ACCESS_COOKIE, required = false) String accessToken,
+            HttpServletRequest request, HttpServletResponse response) {
+        service.revoke(refreshToken, TokenType.REFRESH);
+        service.revoke(accessToken, TokenType.ACCESS);
         cookies.clear(response);
         csrfTokenRepository.saveToken(null, request, response);
         SecurityContextHolder.clearContext();

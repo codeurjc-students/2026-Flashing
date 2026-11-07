@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 const REFRESH_KEY = 'flashing.refreshToken';
 let accessToken: string | null = null;
 let refreshing: Promise<void> | null = null;
+let closing: Promise<void> | null = null;
 
 export interface CurrentUser {
   displayName: string;
@@ -46,12 +47,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       ...options, credentials: 'omit', signal: controller.signal,
     });
     if (!response.ok) {
-      throw new ApiError(response.status, response.status === 401
-        ? 'Revisa tu correo y contraseña.'
-        : 'No se ha podido completar la petición. Inténtalo de nuevo.');
+      let message = 'No se ha podido completar la petición. Inténtalo de nuevo.';
+      if (response.status === 401) {
+        message = path === '/api/v1/auth/mobile/login'
+          ? 'Revisa tu correo y contraseña.'
+          : 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
+      }
+      throw new ApiError(response.status, message);
     }
     if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
+    return await response.json() as T;
   } finally {
     clearTimeout(timeout);
   }
@@ -70,6 +75,7 @@ async function clearTokens() {
 }
 
 async function refresh() {
+  if (closing) throw new ApiError(401, 'Se está cerrando la sesión.');
   if (!refreshing) {
     refreshing = (async () => {
       const token = await SecureStore.getItemAsync(REFRESH_KEY);
@@ -92,17 +98,20 @@ async function refresh() {
 
 export async function authenticatedRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (!accessToken) await refresh();
-  const send = () => {
+  const sentToken = accessToken;
+  const send = (token: string | null) => {
+    if (!token || closing) throw new ApiError(401, 'Inicia sesión para continuar.');
     const headers = new Headers(options.headers);
-    headers.set('Authorization', `Bearer ${accessToken}`);
+    headers.set('Authorization', `Bearer ${token}`);
     return request<T>(path, { ...options, headers });
   };
   try {
-    return await send();
+    return await send(sentToken);
   } catch (error) {
     if (!(error instanceof ApiError) || error.status !== 401) throw error;
-    await refresh();
-    return send();
+    // Otra petición pudo haber renovado mientras esta recibía el 401.
+    if (!accessToken || accessToken === sentToken) await refresh();
+    return send(accessToken);
   }
 }
 
@@ -132,7 +141,19 @@ export async function restoreSession(): Promise<CurrentUser | null> {
 }
 
 export async function logout() {
-  // Esperar una renovación en curso evita que vuelva a guardar tokens después del cierre.
-  await refreshing?.catch(() => {});
-  await clearTokens();
+  if (!closing) {
+    closing = (async () => {
+      await refreshing?.catch(() => {});
+      const token = await SecureStore.getItemAsync(REFRESH_KEY);
+      if (token) {
+        await request<void>('/api/v1/auth/mobile/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: token }),
+        });
+      }
+      await clearTokens();
+    })().finally(() => { closing = null; });
+  }
+  await closing;
 }

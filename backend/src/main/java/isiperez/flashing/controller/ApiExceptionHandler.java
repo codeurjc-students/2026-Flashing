@@ -21,7 +21,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorDTO> handleAuthentication(AuthenticationException exception,
             HttpServletRequest request) {
-        return error(HttpStatus.UNAUTHORIZED, "Invalid email or password", request, Map.of());
+        String message = request.getServletPath().endsWith("/refresh")
+            ? "Session is invalid or expired"
+            : "Invalid email or password";
+        return error(HttpStatus.UNAUTHORIZED, message, request, Map.of());
     }
 
     @ExceptionHandler(JwtException.class)

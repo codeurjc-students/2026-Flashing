@@ -50,10 +50,14 @@ public class SecurityConfig {
                 .ignoringRequestMatchers(request -> {
                     String authorization = request.getHeader("Authorization");
                     boolean bearer = authorization != null && authorization.startsWith("Bearer ");
-                    boolean mobileLogin = HttpMethod.POST.matches(request.getMethod())
-                        && (request.getServletPath().equals("/api/v1/auth/mobile/login")
-                            || request.getServletPath().equals("/api/v1/auth/mobile/refresh"));
-                    return bearer || mobileLogin;
+                    String path = request.getServletPath();
+                    boolean mobileAuth = HttpMethod.POST.matches(request.getMethod())
+                        && (path.equals("/api/v1/auth/mobile/login")
+                            || path.equals("/api/v1/auth/mobile/refresh")
+                            || path.equals("/api/v1/auth/mobile/logout"));
+                    boolean webAuth = path.equals("/api/v1/auth/login")
+                        || path.equals("/api/v1/auth/refresh") || path.equals("/api/v1/auth/logout");
+                    return mobileAuth || (bearer && !webAuth);
                 }))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
@@ -61,7 +65,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
                     "/api/v1/auth/logout", "/api/v1/auth/mobile/login",
-                    "/api/v1/auth/mobile/refresh").permitAll()
+                    "/api/v1/auth/mobile/refresh", "/api/v1/auth/mobile/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/challenges", "/api/v1/challenges/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
