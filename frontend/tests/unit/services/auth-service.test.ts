@@ -44,4 +44,19 @@ describe('Cookie authentication service', () => {
     await expect(logout()).rejects.toMatchObject({ status: 403 });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('shares one renewal across simultaneous 401 responses', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(csrfResponse())
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(user)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(user)));
+
+    await expect(Promise.all([getCurrentUser(), getCurrentUser()])).resolves.toEqual([user, user]);
+    const renewals = fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/auth/refresh'));
+    expect(renewals).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+  });
 });

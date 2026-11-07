@@ -9,6 +9,10 @@ y el proyecto utiliza [versionado semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Rotación y revocación de sesiones JWT en MySQL para web y móvil. Reutilizar una renovación anterior revoca la sesión y sus accesos.
+
+- Base móvil con Expo, splash y acceso con JWT Bearer, renovación mediante SecureStore, restauración y cierre de sesión. HTTP permitido en desarrollo y HTTPS obligatorio en producción.
+
 - Landing de prelanzamiento responsive con la identidad visual de Flashing, demostraciones interactivas y formularios de cuenta. Shiny Text, Tear Ticket y Slide Commit de React Bits integrados mediante shadcn, adaptados a móvil, teclado y movimiento reducido.
 - Pantalla de espera con una única opción voluntaria de aviso de lanzamiento, fecha de consentimiento y posibilidad de desactivarlo.
 - Página informativa de privacidad y pruebas del registro y las preferencias en cliente, API y MySQL.

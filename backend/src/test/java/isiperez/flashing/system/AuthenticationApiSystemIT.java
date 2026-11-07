@@ -8,8 +8,11 @@ import io.restassured.specification.RequestSpecification;
 import isiperez.flashing.TestcontainersConfiguration;
 import isiperez.flashing.model.User;
 import isiperez.flashing.model.UserRole;
+import isiperez.flashing.repository.AuthSessionRepository;
 import isiperez.flashing.repository.UserRepository;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +26,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class AuthenticationApiSystemIT {
     @LocalServerPort int port;
     @Autowired UserRepository repository;
+    @Autowired AuthSessionRepository sessions;
     @Autowired PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        sessions.deleteAll();
         repository.deleteAll();
     }
 
@@ -74,7 +79,7 @@ class AuthenticationApiSystemIT {
         String accessToken = response.cookie("AuthToken");
 
         given().port(port).header("Authorization", "Bearer " + accessToken)
-            .get("/api/v1/users/me").then().statusCode(401);
+            .get("/api/v1/users/me").then().statusCode(200);
 
         withCsrf(new CookieFilter())
             .body(Map.of("refreshToken", response.cookie("RefreshToken")))
@@ -84,6 +89,8 @@ class AuthenticationApiSystemIT {
         given().port(port).filter(browser).get("/api/v1/users/me").then().statusCode(200);
 
         withCsrf(browser).post("/api/v1/auth/logout").then().statusCode(204);
+        given().port(port).cookie("AuthToken", accessToken)
+            .get("/api/v1/users/me").then().statusCode(401);
         given().port(port).filter(browser).get("/api/v1/users/me").then().statusCode(401);
         withCsrf(browser).post("/api/v1/auth/refresh").then().statusCode(401);
     }
@@ -143,6 +150,87 @@ class AuthenticationApiSystemIT {
             .body("role", equalTo("USER"));
         given().port(port).filter(browser).get("/api/v1/users/me").then().statusCode(200)
             .body("launchUpdates", equalTo(false));
+    }
+
+    @Test
+    void mobileLoginAndRefreshShouldReturnTokensAndSupportBearerWrites() {
+        saveUser("mobile", UserRole.USER);
+        var response = given().port(port).contentType("application/json")
+            .body(Map.of("email", "mobile@example.com", "password", "Password_1"))
+            .post("/api/v1/auth/mobile/login").then().statusCode(200).extract().response();
+        assertThat(response.getHeaders().getValues("Set-Cookie")).isEmpty();
+        assertThat(response.header("Cache-Control")).contains("no-store");
+        String access = response.path("accessToken");
+        String refresh = response.path("refreshToken");
+        given().port(port).header("Authorization", "Bearer " + access)
+            .get("/api/v1/users/me").then().statusCode(200);
+        given().port(port).header("Authorization", "Bearer " + access)
+            .contentType("application/json").body(Map.of("launchUpdates", true))
+            .put("/api/v1/users/me/notifications").then().statusCode(200);
+        given().port(port).contentType("application/json")
+            .body(Map.of("refreshToken", refresh))
+            .post("/api/v1/auth/mobile/refresh").then().statusCode(200);
+        given().port(port).contentType("application/json")
+            .body(Map.of("refreshToken", access))
+            .post("/api/v1/auth/mobile/refresh").then().statusCode(401);
+        given().port(port).header("Authorization", "Bearer " + refresh)
+            .get("/api/v1/users/me").then().statusCode(401);
+
+        CookieFilter browser = new CookieFilter();
+        login(browser, "mobile@example.com");
+        given().port(port).filter(browser).header("Authorization", "Bearer invalid")
+            .contentType("application/json").body(Map.of("launchUpdates", false))
+            .put("/api/v1/users/me/notifications").then().statusCode(401);
+        given().port(port).contentType("application/json")
+            .body(Map.of("email", "mobile@example.com", "password", "incorrect"))
+            .post("/api/v1/auth/mobile/login").then().statusCode(401);
+    }
+
+    @Test
+    void concurrentRefreshReuseShouldRevokeTheWholeSession() throws Exception {
+        saveUser("mobile", UserRole.USER);
+        var tokens = mobileLogin();
+        String refreshToken = tokens.path("refreshToken");
+        var first = CompletableFuture.supplyAsync(() -> mobileRefresh(refreshToken));
+        var second = CompletableFuture.supplyAsync(() -> mobileRefresh(refreshToken));
+        var firstResponse = first.get(15, TimeUnit.SECONDS);
+        var secondResponse = second.get(15, TimeUnit.SECONDS);
+
+        assertThat(java.util.List.of(firstResponse.statusCode(), secondResponse.statusCode()))
+            .containsExactlyInAnyOrder(200, 401);
+        var rotated = firstResponse.statusCode() == 200 ? firstResponse : secondResponse;
+        given().port(port).header("Authorization", "Bearer " + rotated.path("accessToken"))
+            .get("/api/v1/users/me").then().statusCode(401);
+        assertThat(mobileRefresh(rotated.path("refreshToken")).statusCode()).isEqualTo(401);
+    }
+
+    @Test
+    void mobileLogoutShouldRevokeCopiedTokensButPreserveOtherSessions() {
+        saveUser("mobile", UserRole.USER);
+        var tokens = mobileLogin();
+        var otherSession = mobileLogin();
+        String refreshToken = tokens.path("refreshToken");
+        for (int attempt = 0; attempt < 2; attempt++) {
+            given().port(port).contentType("application/json")
+                .body(Map.of("refreshToken", refreshToken))
+                .post("/api/v1/auth/mobile/logout").then().statusCode(204);
+        }
+        given().port(port).header("Authorization", "Bearer " + tokens.path("accessToken"))
+            .get("/api/v1/users/me").then().statusCode(401);
+        assertThat(mobileRefresh(refreshToken).statusCode()).isEqualTo(401);
+        given().port(port).header("Authorization", "Bearer " + otherSession.path("accessToken"))
+            .get("/api/v1/users/me").then().statusCode(200);
+    }
+
+    private io.restassured.response.Response mobileLogin() {
+        return given().port(port).contentType("application/json")
+            .body(Map.of("email", "mobile@example.com", "password", "Password_1"))
+            .post("/api/v1/auth/mobile/login").then().statusCode(200).extract().response();
+    }
+
+    private io.restassured.response.Response mobileRefresh(String token) {
+        return given().port(port).contentType("application/json")
+            .body(Map.of("refreshToken", token)).post("/api/v1/auth/mobile/refresh");
     }
 
     private io.restassured.response.Response login(CookieFilter browser, String email) {

@@ -46,13 +46,26 @@ public class SecurityConfig {
             DaoAuthenticationProvider provider, CookieCsrfTokenRepository csrfTokenRepository) throws Exception {
         http
             .authenticationProvider(provider)
-            .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
+            .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository)
+                .ignoringRequestMatchers(request -> {
+                    String authorization = request.getHeader("Authorization");
+                    boolean bearer = authorization != null && authorization.startsWith("Bearer ");
+                    String path = request.getServletPath();
+                    boolean mobileAuth = HttpMethod.POST.matches(request.getMethod())
+                        && (path.equals("/api/v1/auth/mobile/login")
+                            || path.equals("/api/v1/auth/mobile/refresh")
+                            || path.equals("/api/v1/auth/mobile/logout"));
+                    boolean webAuth = path.equals("/api/v1/auth/login")
+                        || path.equals("/api/v1/auth/refresh") || path.equals("/api/v1/auth/logout");
+                    return mobileAuth || (bearer && !webAuth);
+                }))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
-                    "/api/v1/auth/logout").permitAll()
+                    "/api/v1/auth/logout", "/api/v1/auth/mobile/login",
+                    "/api/v1/auth/mobile/refresh", "/api/v1/auth/mobile/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/challenges", "/api/v1/challenges/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

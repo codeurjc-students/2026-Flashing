@@ -1,6 +1,10 @@
 import type { UserDTO } from '~/dtos/UserDTO';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const SESSION_LOCK = 'flashing-session';
+let refreshing: Promise<boolean> | null = null;
+let sessionVersion = 0;
+
 interface CsrfToken {
   headerName: string;
   token: string;
@@ -73,12 +77,16 @@ export async function updateNotificationPreferences(data: NotificationPreference
 }
 
 export async function logout(): Promise<void> {
-  await request<void>('/api/v1/auth/logout', { method: 'POST' }, false);
+  await refreshing?.catch(() => {});
+  const close = () => request<void>('/api/v1/auth/logout', { method: 'POST' }, false);
+  const locks = globalThis.navigator?.locks;
+  await (locks ? locks.request(SESSION_LOCK, close) : close());
 }
 
 async function request<T>(path: string, options: RequestInit = {}, authenticated = true): Promise<T> {
+  const version = sessionVersion;
   let response = await send(path, options);
-  if (authenticated && response.status === 401 && await renewSession()) {
+  if (authenticated && response.status === 401 && (version !== sessionVersion || await renewSession())) {
     response = await send(path, options);
   }
   if (!response.ok) {
@@ -105,6 +113,18 @@ async function send(path: string, options: RequestInit): Promise<Response> {
 }
 
 async function renewSession(): Promise<boolean> {
-  const response = await send('/api/v1/auth/refresh', { method: 'POST' });
-  return response.ok;
+  if (!refreshing) {
+    const renew = async () => (await send('/api/v1/auth/refresh', { method: 'POST' })).ok;
+    const locks = globalThis.navigator?.locks;
+    const operation = locks ? locks.request(SESSION_LOCK, async () => {
+      // Otra pestaña pudo renovar las cookies mientras esperábamos el bloqueo.
+      const profile = await send('/api/v1/users/me', { cache: 'no-store' });
+      return profile.ok || await renew();
+    }) : renew();
+    refreshing = operation.then((renewed) => {
+      if (renewed) sessionVersion++;
+      return renewed;
+    }).finally(() => { refreshing = null; });
+  }
+  return refreshing;
 }
